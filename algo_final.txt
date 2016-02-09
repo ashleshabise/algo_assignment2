@@ -1,0 +1,253 @@
+/********************************************************************************
+*
+*  MTH 524(A)
+*  DATA STRUCTURE AND ALGORITHMS
+*  GROUP ID: 04
+*  Home Work 2
+*  Algorithm
+*
+********************************************************************************/
+
+We use linked list to save a multivariable polynomial whose data structure defined as follows,
+typedef struct polynomial{
+	int i;
+	int j;
+	int k;
+	double coeff;
+	struct polynomial *next;
+	}polynomial;	
+
+*********************************************************************************
+	COMPUTE-Q(m,p,x)
+1.	for iter <- 0 to m/2
+2.	do	sign <- iter%2 ? -1 : 1
+		/*Here sign takes value of (-1)^iter*/
+3.		(polynomial*)numerator <- pow(modXSquare(x), iter) * delPK(p, iter, x)
+4.		numerator <- numerator * sign;
+5.		denominator <- COMPUTE(iter)*pow(3+2*m, iter+1)
+6.		sum <- sum + numerator/denominator
+	End for loop
+7.	return sum
+
+**********************************************************************************
+
+	/*  Computes del(p) */
+	delP(firstTerm)				/*Here first term is  pointer pointing to the first term of polynomial*/
+1.	for iter <-0 to 2
+2.	do	currentTerm <- firstTerm
+3.		while( currentTerm != NULL )
+4.		do	i <- (currentTerm->i)
+5.			j <- (currentTerm->j)
+6.			k <- (currentTerm->k)
+7.			coeff <- (currentTerm->coeff)
+8.			(polynomial*)newTerm <-  (polynomial*)malloc(sizeof(polynomial))
+9.			(newTerm->i) <- i
+10.			(newTerm->j) <- j
+11.			(newTerm->k) <- k
+12.			(newTerm->next) <- NULL
+13.			switch(iter)
+			// wrt x
+14.				case 0:if (i>=2)
+15.					coeff <- coeff*i*(i-1)
+16.					i <- (i-2)
+17.					(newTerm->i) <- i
+18.					(newTerm->coeff) <- coeff
+					// This pushes newTerm at the end of the linked list. 
+19.					push(&list1,newTerm)
+					break;
+			// wrt y
+20.				case 1:if (j>=2)
+21.					coeff <- coeff*j*(j-1)
+22.					j <- (j-2)
+23.					(newTerm->j) <- j
+24.					(newTerm->coeff) <- coeff
+					// This pushes newTerm at the end of the linked list. 
+25.					push(&list2,newTerm)
+					break;
+			// wrt z
+26.				case 2:if (k>=2)
+27.					coeff <- coeff*k*(k-1)
+28.					k <- (k-2)
+29.					(newTerm->k) <- k
+30.					(newTerm->coeff) <- coeff
+					// This pushes newTerm at the end of the linked list. 
+31.					push(&list3,newTerm)
+					break;
+			End switch
+32.			currentTerm <- (currentTerm->next)
+		End while loop
+	End for loop	
+	//join the three lists.
+33.	(polynomial*)temp <- list1
+34.	while(temp->next)
+35.	do	temp <- temp->next
+36.		(temp->next) <- list2
+37.	while(temp->next)
+38.	do	temp<-(temp->next)
+39.		(temp->next) <- list3	
+40.	return list1
+
+**********************************************************************************************
+	/*Function for applying delP k times*/
+	delPK(p, k) /*Here p is a polynomial and k is an integer*/
+1.	(polynomial*)result <- p
+2.	for i<-0 to (k-1)
+3.	do	result <- delP(result)
+	End for loop
+4.	return result
+
+**********************************************************************************************
+	
+	modXSquare( *x)   /* here x is a pointer to a double data structure*/
+1.	return x[0]*x[0] + x[1]*x[1]+ x[2]*x[2]
+
+**********************************************************************************************
+
+	polyValue(p,x)  /*Here p is a polynomial and x has double data structure*/
+1.	value<- 0
+2.	while (p)
+3.	do	value <- value+POWER(x[0],p->i)*POWER(x[1], p->j)*POWER(x[2], p->k)*p->coeff
+4.		p <- (p->next)
+	End while loop
+5.	return value
+
+**********************************************************************************************
+
+	push(polynomial **p, polynomial *newTerm)
+	/*Here p is a pointer to the pointer to the polynomial and new term is a pointer to the polynomial*/
+	// Get to the last term and attach newTerm there.
+1.	(polynomial*)temp = *p
+2.	if (*p = NULL)
+3.		*p <- newTerm
+4.		return
+	End if
+5.	while(temp->next)
+6.	do	temp<-(temp->next)
+7.		(temp->next) <- newTerm 
+	End while loop
+
+**********************************************************************************************
+
+	// Computing polynomial at x 
+	polyAtX(p,x[3]) /*Here p is a pointer to the polynomial*/
+1.	delpatx <- 0
+2.	predptr <- p
+3.	while(predptr!=NULL)
+4.	do	delpatx <- delpatx+(predptr->coeff)*(pow(x[0],predptr->i))*(pow(x[1],predptr->j))*(pow(x[2],predptr->k))
+5.		predptr <-  predptr->next
+	End while loop
+6.	return delpatx
+
+**********************************************************************************************
+
+	extractP(m,nonZeroTermIndices[],terms,coeffP)
+	/* Here m,nonZeroTermIndices[],terms are integers and coeffP is a pointer to double*/
+1.	fflush(stdout)
+2.	(polynomial*)p <- NULL
+3.	for iter=0 to terms
+4.	do	index <- nonZeroTermIndices[iter]
+5.		(polynomial*)newTerm <- (polynomial*)malloc(sizeof(polynomial))
+6.		k <- index%(m+1)
+7.		j <- ((index%(int)pow((m+1),2))-k)/(m+1)
+8.		i <- (index-k-j)/(int)pow((m+1),2)
+9.		(newTerm->i) <- i
+10.		(newTerm->j) <- j
+11.		(newTerm->k) <- k
+12.		(newTerm->coeff) <- coeffP[iter]
+13.		(newTerm->next) <- NULL
+14.		push(&p, newTerm)
+	End for loop
+15.	return p
+
+**********************************************************************************************
+	
+	printP(p) 		/*Here p is pointer to the polynomial*/
+1.	(polynomial*)temp <- p
+2.	while ( temp)
+3.	do	print the polynomial q term by term
+4.		temp <- temp->next
+	End while loop
+
+***********************************************************************************************
+
+	/*function for checking a polynomial to be homogeneous*/
+	checkHomoPoly(polynomial* pin,int m)
+	(polynomial*)curTerm<-pin
+1.	printP(pin)
+2.	print m
+3.	while(curTerm != NULL)
+4.	do	print curTerm->i, curTerm->j, curTerm->k
+5.		if ( ((curTerm->i) + (curTerm->j) + (curTerm->k)) !=m )
+6.			return false;
+7.		curTerm <- (curTerm->next)
+	End while loop
+8.	return true
+
+***********************************************************************************************
+
+	/*function to compute (2,2)k+1 */
+	/* One Should check that 
+	(2,2)k+1 = 2.4.6..... (2k+2)*/
+	COMPUTE(k)
+1.	n<-1
+2.	for i<-1 to k+1
+3.	do	n <- n*2*i
+	End for loop
+4.	return n
+
+***********************************************************************************************
+*
+*  MTH 524(A)
+*  DATA STRUCTURE AND ALGORITHMS
+*  GROUP ID: 04
+*  Home Work 2
+*  Analysis Of Algorithm
+*
+*********************************************************************************************/
+
+Time complexity of printP() is linear in the length of the linked list.
+
+push() It traverses the whole linked list and adds a node to its end. It is used mainly to extract polynomil from coeff-p array.
+Time complexity of push() is linear in the length of the linked list.
+
+delP() computes the summation of the  double partial differentiation of the given polynomial with respect to each variable.
+Time complexity  of delP() is 3*(length of linked list), again linear in the length of the linked list.
+
+checkHomoPoly() checks whether the given polynomial is homogenous or not, since the program is made only for homogeneous functions.
+Time complexity of checkHomoPoly() is linear in length of the linked list.
+
+COMPUTE() function calculates 2.4.6...(2(k+1)) which is calculated putting a=b=2 in the denominator (a,b) at k+1.
+Time complexity of COMPUTE() is linear in 'k'
+
+delPK() calls delP function 'k' times. Hence it time complexity is k*T(length of the linked list).
+
+modXSquare() calculates the numerical value of  |x|^2 for the given value of x vector. Time complexity of this function is T(1).
+
+polyAtX() evaluates the polynomial at x. Its time complexity is T(length of the linked list). It is used in the function delPK().
+ 
+
+
+ TIME COMPLEXITY
+	/* For Function COMPUTE-Q */
+	Step	Cost	Times		Remark
+	1.	c1	m/2+1		This for loop runs for m/2+2 times.
+	2.	c2	m/2+1		This line runs for m/2+1 times.
+	3.	c3	(m/2+1)*T(#terms)	The cost of this line depends upon the functions,
+					modXSquare and delPK.In Fact, time is m/2+1 times maximum of maximum
+					time of  modXSquare() and delPK() functions, i.e., that of delPK().
+	4.	c4	m/2+1		This line should take constant time and runs m/2+1 times within for loop.
+	5.	c5	(m/2+1)*T(#terms)	The cost of this line depends upon the functions,
+					COMPUTE and pow.In Fact, time is m/2+1 times maximum of maximum
+					time of  COMPUTE and pow functions.But pow function takes constant
+					time to run.So, the time is m/2+1 times time taken by COMPUTE function.
+	6.	c6	m/2+1		This line should take constant time and runs m/2+1 times within for loop.
+	7.	c7	const.		returning a value should take constant time.
+
+
+Total Cost , T(n) = c1*(m/2+2) + c2*(m/2+1) + c3*(m/2+1)* + c4*(m/2+1) + c5*(m/2+1)* + c6*(m/2+1) + c7*const. 
+		  = m*(c1+c2+c4+c6) + (c1+c7)
+		  = k1*m + k2
+		  = O(m)
+
+Hence the function should run in linear time to the # of terms in the polynomial.
+
